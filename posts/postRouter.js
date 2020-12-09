@@ -1,27 +1,39 @@
 const express = require('express');
 
+const postDb = require('./postDb');
+const validatePostId = require('./postMiddleware');
+
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  // do your magic!
+  postDb.get()
+    .then(posts => res.status(200).json(posts))
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ message: "Error retrieving posts." });
+    });
 });
 
-router.get('/:id', (req, res) => {
-  // do your magic!
+router.get('/:id', validatePostId, (req, res) => {
+  res.status(200).json(req.post);
 });
 
-router.delete('/:id', (req, res) => {
-  // do your magic!
+router.delete('/:id', validatePostId, (req, res) => {
+  postDb.remove(req.params.id)
+    .then(removed => res.status(201).json(removed))
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ message: "Error removing post." });
+    });
 });
 
-router.put('/:id', (req, res) => {
-  // do your magic!
+router.put('/:id', validatePostId, (req, res) => {
+  postDb.update(req.params.id, { ...req.body, text: req.body.text })
+    .then(updated => res.status(202).json(updated))
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ message: "Error when updating post." });
+    });
 });
-
-// custom middleware
-
-function validatePostId(req, res, next) {
-  // do your magic!
-}
 
 module.exports = router;
